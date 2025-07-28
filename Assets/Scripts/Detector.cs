@@ -4,26 +4,26 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class Detector : MonoBehaviour
 {
-    public event Action OnEnterDetected;
-    public event Action OnExitDetected;
+    public event Action EnterDetecting;
+    public event Action ExitDetecting;
     
-    private Collider Collider;
+    private Collider _collider;
 
     private void Awake()
     {
-        Collider = GetComponent<BoxCollider>();
-        Collider.isTrigger = true;
+        _collider = GetComponent<BoxCollider>();
+        _collider.isTrigger = true;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent<Thief>(out _))
-            OnEnterDetected?.Invoke();
+            EnterDetecting?.Invoke();
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.TryGetComponent<Thief>(out _))
-            OnExitDetected?.Invoke();
+            ExitDetecting?.Invoke();
     }
 }

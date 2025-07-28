@@ -11,9 +11,9 @@ public class Signaler : MonoBehaviour
     private AudioSource _audioSource;
 
     private float _speed = 0.1f;
-    private float _currentVolume;
     private float _maxVolume = 1f;
-    private float _minVolume = 0f;
+    private float _minVolume;
+    private float _currentVolume;
 
     private Coroutine _currentCoroutine;
 
@@ -21,70 +21,42 @@ public class Signaler : MonoBehaviour
     {
         _audioSource = GetComponent<AudioSource>();
         _detector = GetComponent<Detector>();
+        
         _audioSource.clip = _audioClip;
         _audioSource.loop = true;
         _audioSource.volume = _currentVolume;
     }
 
-    private void OnEnable()
-    {
-        _detector.OnEnterDetected += StartIncreaseVolume;
-        _detector.OnExitDetected += StartDecreaseVolume;
-    }
-
     private void OnDisable()
     {
-        _detector.OnEnterDetected -= StartIncreaseVolume;
-        _detector.OnExitDetected -= StartDecreaseVolume;
-        
         if (_currentCoroutine != null)
             StopAllCoroutines();
     }
 
-    private void StartIncreaseVolume()
+    public void StartIncreaseVolume()
     {
-        StopCurrentCoroutine();
-        _currentCoroutine = StartCoroutine(IncreaseCoroutine());
-    }
-
-    private void StartDecreaseVolume()
-    {
-        StopCurrentCoroutine();
-        _currentCoroutine = StartCoroutine(DecreaseCoroutine());
-    }
-
-    private IEnumerator IncreaseCoroutine()
-    {
+        StopAllCoroutines();
         _audioSource.Play();
-        
-        while (Mathf.Approximately(_currentVolume, _maxVolume) == false)
-        {
-            _currentVolume = Mathf.MoveTowards(_currentVolume, _maxVolume, _speed * Time.deltaTime);
-            _audioSource.volume = _currentVolume;
-            
-            yield return null;
-        }
+        _currentCoroutine = StartCoroutine(ChangeVolumeCoroutine(_maxVolume));
     }
 
-    private IEnumerator DecreaseCoroutine()
+    public void StartDecreaseVolume()
     {
-        while (Mathf.Approximately(_currentVolume, _minVolume) == false)
+        StopAllCoroutines();
+        _currentCoroutine = StartCoroutine(ChangeVolumeCoroutine(_minVolume));
+        
+        if(Mathf.Approximately(_currentVolume, _minVolume))
+            _audioSource.Stop();
+    }
+
+    private IEnumerator ChangeVolumeCoroutine(float targetVolume)
+    {
+        while (Mathf.Approximately(_currentVolume, targetVolume) == false)
         {
-            _currentVolume = Mathf.MoveTowards(_currentVolume, _minVolume, _speed * Time.deltaTime);
+            _currentVolume = Mathf.MoveTowards(_currentVolume, targetVolume, _speed * Time.deltaTime);
             _audioSource.volume = _currentVolume;
             
             yield return null;
-        }
-        
-        _audioSource.Stop();
-    }
-    
-    private void StopCurrentCoroutine()
-    {
-        if (_currentCoroutine != null)
-        {
-            StopCoroutine(_currentCoroutine);
-            _currentCoroutine = null;
         }
     }
 }
