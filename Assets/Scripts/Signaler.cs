@@ -30,23 +30,29 @@ public class Signaler : MonoBehaviour
     private void OnDisable()
     {
         if (_currentCoroutine != null)
-            StopAllCoroutines();
+            StopCoroutine(_currentCoroutine);
+        
+        _audioSource.Stop();
     }
 
     public void StartIncreaseVolume()
     {
-        StopAllCoroutines();
+        if (_currentCoroutine != null)
+            StopCoroutine(_currentCoroutine);
+        
         _audioSource.Play();
         _currentCoroutine = StartCoroutine(ChangeVolumeCoroutine(_maxVolume));
     }
 
     public void StartDecreaseVolume()
     {
-        StopAllCoroutines();
+        if (_currentCoroutine != null)
+            StopCoroutine(_currentCoroutine);
+        
         _currentCoroutine = StartCoroutine(ChangeVolumeCoroutine(_minVolume));
         
         if(Mathf.Approximately(_currentVolume, _minVolume))
-            _audioSource.Stop();
+            _audioSource.Pause();
     }
 
     private IEnumerator ChangeVolumeCoroutine(float targetVolume)
